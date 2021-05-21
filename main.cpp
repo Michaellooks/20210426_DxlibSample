@@ -1,49 +1,10 @@
-//ヘッダーファイルの読み込み
-#include "DxLib.h"			//DxLibを使う時は必要
+
+//ヘッダファイルの読み込み
+#include "game.h"
 
 #include "keyboard.h"		//キーボードの処理
 
 #include "FPS.h"			//FPSの処理
-
-//マクロ定義
-#define GAME_TITLE "ゲームタイトル"		//ゲームタイトル
-
-#define GAME_WIDTH  1280	//ゲーム画面の幅(ウィドス)
-#define GAME_HEIGHT 720		//ゲーム画面の高さ(ウィドス)
-#define GAME_COLOR	32		//ゲームの色域
-
-#define GAME_ICON_ID   333	//ゲームのアイコンのID
-
-#define GAME_WINDOW_BAR 0	//ウィンドウバーの種類	
-
-//列挙型	プロトタイプ宣言の上に置く
-enum GAME_SCENE
-{
-	GAME_SCENE_TITLE,
-	GAME_SCENE_PLAY,
-	GAME_SCENE_END,
-	GAME_SCENE_CHANGE
-};	//ゲームのシーン
-
-//プロトタイプ宣言
-VOID Title(VOID);				//	タイトル画面
-VOID TitleProc(VOID);			//	タイトル画面（処理）
-VOID TitleDraw(VOID);			//	タイトル画面（描画）
-
-VOID Play(VOID);				//	プレイ画面
-VOID PlayProc(VOID);			//	プレイ画面（処理）
-VOID PlayDraw(VOID);			//	プレイ画面（描画）
-
-VOID End(VOID);					//	エンド画面
-VOID EndProc(VOID);				//	エンド画面（処理）
-VOID EndDraw(VOID);				//	エンド画面（描画）
-
-VOID Change(VOID);				//	切り替え画面
-VOID ChangeProc(VOID);			//	切り替え画面（処理）
-VOID ChangeDraw(VOID);			//	切り替え画面（描画）
-
-VOID ChangeScene(GAME_SCENE scene);
-
 
 //シーンを管理する変数
 GAME_SCENE GameScene;		//	現在のゲームのシーン
@@ -66,6 +27,26 @@ int fadeOutCntMax = fadeTimeMax;	//フェードアウトのカウンタMAX
 int fadeInCntInit = fadeTimeMax;	//初期値
 int fadeInCnt = fadeInCntInit;		//フェードアウトのカウンタ
 int fadeInCntMax = fadeTimeMax;		//フェードアウトのカウンタMAX
+
+//プロトタイプ宣言
+VOID Title(VOID);				//	タイトル画面
+VOID TitleProc(VOID);			//	タイトル画面（処理）
+VOID TitleDraw(VOID);			//	タイトル画面（描画）
+
+VOID Play(VOID);				//	プレイ画面
+VOID PlayProc(VOID);			//	プレイ画面（処理）
+VOID PlayDraw(VOID);			//	プレイ画面（描画）
+
+VOID End(VOID);					//	エンド画面
+VOID EndProc(VOID);				//	エンド画面（処理）
+VOID EndDraw(VOID);				//	エンド画面（描画）
+
+VOID Change(VOID);				//	切り替え画面
+VOID ChangeProc(VOID);			//	切り替え画面（処理）
+VOID ChangeDraw(VOID);			//	切り替え画面（描画）
+
+VOID ChangeScene(GAME_SCENE scene);
+
 
 // プログラムは WinMain から始まります
 //Windowsのプログラミング方法 = (WinAPI)で動いている！

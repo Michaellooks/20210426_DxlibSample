@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FPS.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -158,6 +159,7 @@
     <Image Include="game.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FPS.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

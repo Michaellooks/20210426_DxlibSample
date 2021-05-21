@@ -3,6 +3,8 @@
 
 #include "keyboard.h"		//キーボードの処理
 
+#include "FPS.h"			//FPSの処理
+
 //マクロ定義
 #define GAME_TITLE "ゲームタイトル"		//ゲームタイトル
 
@@ -92,7 +94,7 @@ int WINAPI WinMain(
 
 	SetWindowStyleMode(GAME_WINDOW_BAR);				//	ウィンドウバーの状態
 
-	SetWaitVSyncFlag(TRUE);								//	ディスプレイの垂直同期を有効にする
+	SetWaitVSyncFlag(TRUE);								//	ディスプレイの垂直同期を有効にする ※重要
 
 	SetAlwaysRunFlag(TRUE);								//	ウィンドウをずっとアクティブにする
 
@@ -128,6 +130,9 @@ int WINAPI WinMain(
 
 		//キーボード入力の更新
 		AllKeyUpdate();
+
+		//FPS値の更新
+		FPSUpdate();
 
 		//ESCキーで強制終了
 		if (KeyClick(KEY_INPUT_ESCAPE) == TRUE) { break; }
@@ -188,8 +193,13 @@ int WINAPI WinMain(
 
 		DrawCircle(X, Y, radius, GetColor(255, 255, 0), TRUE);
 
-		ScreenFlip();			//ダブルバッファリングした画面を描画
+		//FPS値を描画
+		FPSDraw();
 
+		//FPS値を待つ
+		FPSWait();
+		
+		ScreenFlip();			//ダブルバッファリングした画面を描画
 	}
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
@@ -246,7 +256,7 @@ VOID TitleProc(VOID)
 /// </summary>
 VOID TitleDraw(VOID)
 {
-	DrawString(0, 0, "タイトル画面", GetColor(0, 0, 0));
+	DrawString(0, 0, "タイトル画面を表示", GetColor(0, 0, 0));
 	
 	return;
 }
@@ -285,7 +295,7 @@ VOID PlayProc(VOID)
 /// </summary>
 VOID PlayDraw(VOID)
 {
-	DrawString(0, 0, "プレイ画面", GetColor(0, 0, 0));
+	DrawString(0, 0, "プレイ画面を表示", GetColor(0, 0, 0));
 
 	return;
 }
@@ -324,7 +334,7 @@ VOID EndProc(VOID)
 /// </summary>
 VOID EndDraw(VOID)
 {
-	DrawString(0, 0, "エンド画面", GetColor(0, 0, 0));
+	DrawString(0, 0, "エンド画面を表示", GetColor(0, 0, 0));
 
 	return;
 }
@@ -422,12 +432,12 @@ VOID ChangeDraw(VOID)
 	}
 
 	//四角を描画
-	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 0), TRUE);
+	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 255), TRUE);
 
 	//半透明終了
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-	DrawString(0, 0, "切り替え画面", GetColor(0, 0, 0));
+	DrawString(0, 0, "切り替え画面", GetColor(255, 0, 0));
 	
 	return;
 }

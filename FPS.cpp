@@ -105,7 +105,8 @@ VOID FPSWait(VOID)
 			if (waitTiem > 0
 				&& waitTiem <= 1000.0f / fps.Value)
 			{
-				fps.Count++;
+				//fps.Count++;
+				fps.Value++;
 			}
 			else
 			{

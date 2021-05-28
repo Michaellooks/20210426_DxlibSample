@@ -55,27 +55,29 @@ int fadeInCnt = fadeInCntInit;		//フェードアウトのカウンタ
 int fadeInCntMax = fadeTimeMax;		//フェードアウトのカウンタMAX
 
 //プロトタイプ宣言
-VOID Title(VOID);				//	タイトル画面
-VOID TitleProc(VOID);			//	タイトル画面（処理）
-VOID TitleDraw(VOID);			//	タイトル画面（描画）
+VOID Title(VOID);							//	タイトル画面
+VOID TitleProc(VOID);						//	タイトル画面（処理）
+VOID TitleDraw(VOID);						//	タイトル画面（描画）
 
-VOID Play(VOID);				//	プレイ画面
-VOID PlayProc(VOID);			//	プレイ画面（処理）
-VOID PlayDraw(VOID);			//	プレイ画面（描画）
+VOID Play(VOID);							//	プレイ画面
+VOID PlayProc(VOID);						//	プレイ画面（処理）
+VOID PlayDraw(VOID);						//	プレイ画面（描画）
 
-VOID End(VOID);					//	エンド画面
-VOID EndProc(VOID);				//	エンド画面（処理）
-VOID EndDraw(VOID);				//	エンド画面（描画）
+VOID End(VOID);								//	エンド画面
+VOID EndProc(VOID);							//	エンド画面（処理）
+VOID EndDraw(VOID);							//	エンド画面（描画）
 
-VOID Change(VOID);				//	切り替え画面
-VOID ChangeProc(VOID);			//	切り替え画面（処理）
-VOID ChangeDraw(VOID);			//	切り替え画面（描画）
+VOID Change(VOID);							//	切り替え画面
+VOID ChangeProc(VOID);						//	切り替え画面（処理）
+VOID ChangeDraw(VOID);						//	切り替え画面（描画）
 
-VOID ChangeScene(GAME_SCENE scene);	//シーン切り替え
+VOID ChangeScene(GAME_SCENE scene);			//シーン切り替え
 
 VOID CollUpdatePlayer(CHARACTOR* chara);	//当たり判定の領域を更新
 
 VOID CollUpdate(CHARACTOR* chara);			//当たり判定
+
+BOOL OnCollRect(RECT A, RECT B);			//矩形と矩形の当たり判定
 
 
 // プログラムは WinMain から始まります
@@ -147,8 +149,10 @@ int WINAPI WinMain(
 	//画像の幅と高さを取得
 	GetGraphSize(player.handle, &player.width, &player.height);
 
+	/*
 	//当たり判定を更新する
-	CollUpdatePlayer(&player);	//プレイヤーの当たり判定のアドレス
+	CollUpdatePlayer(&player);	//プレイヤーの当たり判定のアドレス ※位置を変えてから当たり判定を変える
+	*/
 
 	//プレイヤーを初期化
 	player.x = GAME_WIDTH / 2 - player.width / 2;		//中央寄せ
@@ -156,8 +160,11 @@ int WINAPI WinMain(
 	player.speed = 500;
 	player.IsDraw = TRUE;
 
+	//当たり判定を更新する
+	CollUpdatePlayer(&player);	//プレイヤーの当たり判定のアドレス
+
 	//ゴールの画像の読み込み
-	strcpyDx(goal.path, ".\\image\\goal.jpg");	//パスのコピー
+	strcpyDx(goal.path, ".\\image\\goal.png");	//パスのコピー
 	goal.handle = LoadGraph(goal.path);			//画像の読み込み
 
 	//画像が読み込め勝った時は、エラー(ー１)が入る
@@ -177,15 +184,14 @@ int WINAPI WinMain(
 	//画像の幅と高さを取得
 	GetGraphSize(goal.handle, &goal.width, &goal.height);
 
-	//当たり判定を更新する
-	CollUpdate(&goal);	//プレイヤーの当たり判定のアドレス
-
 	//ゴールを初期化
 	goal.x = GAME_WIDTH - goal.width;
-	goal.y = 100;
+	goal.y = 150;
 	goal.speed = 500;
 	goal.IsDraw = TRUE;	//描画できる
 	
+	//当たり判定を更新する
+	CollUpdate(&goal);	//プレイヤーの当たり判定のアドレス
 
 	//無限ループ
 	while (1)
@@ -330,6 +336,7 @@ VOID Play(VOID)
 /// </summary>
 VOID PlayProc(VOID)
 {
+	/*
 	//エンドシーンへ切り替える
 	if (KeyClick(KEY_INPUT_RETURN) == TRUE)
 	{
@@ -339,6 +346,7 @@ VOID PlayProc(VOID)
 		//エンド画面に切り替え
 		ChangeScene(GAME_SCENE_END);
 	}
+	*/
 
 	//プレイヤーの操作
 	if (KeyDown(KEY_INPUT_UP))
@@ -363,6 +371,17 @@ VOID PlayProc(VOID)
 
 	//当たり判定を更新する
 	CollUpdatePlayer(&player);
+
+	//ゴールの当たり判定を更新する
+	CollUpdate(&goal);
+
+	//プレイヤーがゴールに当たったときは　※更新をした後に書く
+	if (OnCollRect(player.coll, goal.coll) == TRUE)
+	{
+		//エンド画面に切り替え
+		ChangeScene(GAME_SCENE_END);
+		return;				//処理を強制終了
+	}
 
 	return;
 }
@@ -541,7 +560,7 @@ VOID ChangeDraw(VOID)
 	}
 
 	//四角を描画
-	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT, GetColor(0, 0, 255), TRUE);
+	DrawBox(0, 0, GAME_WIDTH, GAME_HEIGHT, GetColor(255, 255, 0), TRUE);
 
 	//半透明終了
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -552,19 +571,23 @@ VOID ChangeDraw(VOID)
 }
 
 /// <summary>
-/// 当たり判定の領域更新
+/// プレイヤー当たり判定の領域更新
 /// </summary>
 /// <param name="Coll"></param>
 VOID CollUpdatePlayer(CHARACTOR* chara)
 {
 	chara->coll.left = chara->x + 25;						//当たり判定を微調整
-	chara->coll.top = chara->y + 80;						//当たり判定を微調整
-	chara->coll.right = chara->x + chara->width - 30;		//当たり判定を微調整
-	chara->coll.bottom = chara->y + chara->height - 50;		//当たり判定を微調整
+	chara->coll.top = chara->y + 15;						//当たり判定を微調整
+	chara->coll.right = chara->x + chara->width - 15;		//当たり判定を微調整
+	chara->coll.bottom = chara->y + chara->height - 5;		//当たり判定を微調整
 
 	return;
 }
 
+/// <summary>
+/// ゴール当たり判定の更新
+/// </summary>
+/// <param name="chara"></param>
 VOID CollUpdate(CHARACTOR* chara)
 {
 	chara->coll.left = chara->x;
@@ -575,4 +598,31 @@ VOID CollUpdate(CHARACTOR* chara)
 	chara->coll.bottom = chara->y + chara->height;
 
 	return;
+}
+
+/// <summary>
+/// 当たり判定の処理
+/// </summary>
+/// <param name="A">矩形(くけい)A</param>
+/// <param name="B">矩形(くけい)B</param>
+/// <returns>当たったか当たってないか</returns>
+BOOL OnCollRect(RECT A, RECT B)
+{
+	if ( 
+		 A.left < B.right &&	//左辺のX座標＜右辺のX座標   かつ
+		 A.right > B.left &&	//右辺のX座標＞左辺のX座標   かつ
+		 A.top < B.bottom &&	//上辺のＹ座標＜下辺のＹ座標 かつ
+		 A.bottom > B.top		//下辺のＹ座標＞上辺のＹ座標
+		)
+	{
+
+		return TRUE;
+	
+	}
+	else
+	{
+	
+		return FALSE;
+	
+	}
 }

@@ -75,9 +75,10 @@ CHARACTOR player;
 CHARACTOR goal;
 
 //画像を読み込む
-IMAGE TitleLogo;	//タイトルロゴ
-IMAGE TitleEnter;	//エンターキーを押す
-IMAGE EndClear;		//クリアロゴ
+IMAGE TitleLogo;			//タイトルロゴ
+IMAGE TitleEnter;			//エンターキーを押す
+IMAGE EndClear;				//クリアロゴ
+IMAGE EndClearUnderline;	//クリアロゴの下線
 
 //音楽
 AUDIO TitleBGM;
@@ -103,6 +104,12 @@ int fadeOutCntMax = fadeTimeMax;	//フェードアウトのカウンタMAX
 int fadeInCntInit = fadeTimeMax;	//初期値
 int fadeInCnt = fadeInCntInit;		//フェードアウトのカウンタ
 int fadeInCntMax = fadeTimeMax;		//フェードアウトのカウンタMAX
+
+//PushEnterの点滅
+int PushEnterCnt = 0;				//カウンタ
+//int PushEnterCntMAX = 60;			//カウンタMAX値
+const int PushEnterCntMAX = 100;		//カウンタMAX値
+BOOL PushEnterBrink = FALSE;		//点滅しているか
 
 //プロトタイプ宣言
 VOID Title(VOID);							//	タイトル画面
@@ -270,9 +277,10 @@ int WINAPI WinMain(
 	DeleteGraph(player.img.handle);		//画像をメモリ上から削除
 	DeleteGraph(goal.img.handle);		//画像をメモリ上から削除
 	
-	DeleteGraph(TitleLogo.handle);		//画像をメモリ上から削除
-	DeleteGraph(TitleEnter.handle);		//画像をメモリ上から削除
-	DeleteGraph(EndClear.handle);		//画像をメモリ上から削除
+	DeleteGraph(TitleLogo.handle);				//画像をメモリ上から削除
+	DeleteGraph(TitleEnter.handle);				//画像をメモリ上から削除
+	DeleteGraph(EndClear.handle);				//画像をメモリ上から削除
+	DeleteGraph(EndClearUnderline.handle);		//画像をメモリ上から削除
 
 	DeleteSoundMem(TitleBGM.handle);	//音楽をメモリ上からっ削除
 	DeleteSoundMem(PlayBGM.handle);		//音楽をメモリ上からっ削除
@@ -322,6 +330,7 @@ BOOL GameLoad(VOID)
 	if (!LoadImageMem(&TitleLogo, ".\\Image\\titlelogo.png")) { return FALSE; }
 	if (!LoadImageMem(&TitleEnter, ".\\Image\\pushenter.png")) { return FALSE; }
 	if (!LoadImageMem(&EndClear, ".\\Image\\gameclear.png")) { return FALSE; }
+	if (!LoadImageMem(&EndClearUnderline, ".\\Image\\gameclearUnderline.png")) { return FALSE; }
 
 	//音楽の読み込み
 	if (!LoadAudio(&TitleBGM, ".\\AUDIO\\game_title.wav", 255, DX_PLAYTYPE_LOOP)) { return FALSE; }
@@ -357,6 +366,28 @@ VOID GameInit(VOID)
 
 	//当たり判定を更新する
 	CollUpdate(&goal);	//プレイヤーの当たり判定のアドレス
+
+	//タイトルロゴの位置を決める
+	TitleLogo.x = GAME_WIDTH / 2 - TitleLogo.width / 2;			//中央揃え
+	TitleLogo.y = 1;
+
+	//PushEnterの位置を決める
+	TitleEnter.x = GAME_WIDTH / 2 - TitleEnter.width / 2;		//中央揃え
+	TitleEnter.y = GAME_HEIGHT - TitleEnter.height - 50;
+
+	//ClearLogoの位置を決める
+	EndClear.x = GAME_WIDTH / 2 - EndClear.width / 2;			//中央揃え
+	EndClear.y = GAME_HEIGHT / 2 - EndClear.height / 2;			//中央揃え
+	
+	//ClearLogoUnderlinの位置を決める
+	EndClearUnderline.x = GAME_WIDTH / 2 - EndClearUnderline.width / 2;				//中央揃え
+	EndClearUnderline.y = GAME_HEIGHT / 2 - EndClearUnderline.height / 2;			//中央揃え
+
+	//PushEnterの点滅
+	PushEnterCnt = 0;
+	//PushEnterCntMAX = 60; //初期化をしなくても良い？
+	PushEnterBrink = FALSE;
+
 }
 
 /// <summary>
@@ -421,8 +452,44 @@ VOID TitleProc(VOID)
 /// </summary>
 VOID TitleDraw(VOID)
 {
-	DrawString(0, 0, "タイトル画面を表示", GetColor(0, 0, 0));
-	
+	//タイトルロゴの描画
+	//画像を描画
+	DrawGraph(TitleLogo.x, TitleLogo.y, TitleLogo.handle, TRUE);
+
+	//MAX値まで待つ
+	if (PushEnterCnt < PushEnterCntMAX) { PushEnterCnt++; }
+	else
+	{
+		if (PushEnterBrink == TRUE)PushEnterBrink = FALSE;
+		else if (PushEnterBrink == FALSE)PushEnterBrink = TRUE;
+
+		PushEnterCnt = 0;	//カウンタの初期化
+	} 
+
+	if (PushEnterBrink == TRUE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)PushEnterCnt / PushEnterCntMAX) * 255);
+
+		//PushEnterの描画
+		DrawGraph(TitleEnter.x, TitleEnter.y, TitleEnter.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+
+	if (PushEnterBrink == FALSE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)(PushEnterCntMAX - PushEnterCnt) / PushEnterCntMAX) * 255);
+		 
+		//PushEnterの描画
+		DrawGraph(TitleEnter.x, TitleEnter.y, TitleEnter.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+
 	return;
 }
 
@@ -628,7 +695,44 @@ VOID EndProc(VOID)
 /// </summary>
 VOID EndDraw(VOID)
 {
-	DrawString(0, 0, "エンド画面を表示", GetColor(0, 0, 0));
+	//PushEnterの描画
+	DrawGraph(EndClear.x, EndClear.y, EndClear.handle, TRUE);
+
+	//MAX値まで待つ
+	if (PushEnterCnt < PushEnterCntMAX) { PushEnterCnt++; }
+	else
+	{
+		if (PushEnterBrink == TRUE)PushEnterBrink = FALSE;
+		else if (PushEnterBrink == FALSE)PushEnterBrink = TRUE;
+
+		PushEnterCnt = 0;	//カウンタの初期化
+	}
+
+	if (PushEnterBrink == TRUE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)PushEnterCnt / PushEnterCntMAX) * 255);
+
+		//PushEnterの描画
+		DrawGraph(EndClearUnderline.x, EndClearUnderline.y, EndClearUnderline.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+
+	if (PushEnterBrink == FALSE)
+	{
+		//半透明にする
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, ((float)(PushEnterCntMAX - PushEnterCnt) / PushEnterCntMAX) * 255);
+
+		//PushEnterの描画
+		DrawGraph(EndClearUnderline.x, EndClearUnderline.y, EndClearUnderline.handle, TRUE);
+
+		//半透明終了
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+	}
+
+	
 
 	return;
 }
@@ -821,17 +925,17 @@ BOOL LoadAudio(AUDIO* audio, const char* path, int volume, int playType)
 
 BOOL LoadImageMem(IMAGE* image, const char* path)
 {
-	//プレイヤーの画像の読み込み
-	strcpyDx(image->path,path);						//パスのコピー
-	player.img.handle = LoadGraph(image->path);		//画像の読み込み
+	//ゴールの画像を読み込み
+	strcpyDx(image->path, path);	//パスのコピー
+	image->handle = LoadGraph(image->path);	//画像の読み込み
 
-	//画像が読み込め勝った時は、エラー(ー１)が入る
+	//画像が読み込めなかったときは、エラー(-1)が入る
 	if (image->handle == -1)
 	{
 		MessageBox(
-			GetMainWindowHandle(),	//メインウィンドウハンドル
-			player.img.path,			//メッセージ本文
-			"画像読み込みエラー！",	//メッセージタイトル
+			GetMainWindowHandle(),	//メインのウィンドウハンドル
+			image->path,			//メッセージ本文
+			"画像読み込みエラー！",		//メッセージタイトル
 			MB_OK					//ボタン
 		);
 
@@ -841,5 +945,6 @@ BOOL LoadImageMem(IMAGE* image, const char* path)
 	//画像の幅と高さを取得
 	GetGraphSize(image->handle, &image->width, &image->height);
 
-
+	//読み込めた
+	return TRUE;
 }

@@ -74,6 +74,9 @@ CHARACTOR player;
 //ゴール
 CHARACTOR goal;
 
+//敵
+CHARACTOR enemy;
+
 //画像を読み込む
 IMAGE TitleLogo;			//タイトルロゴ
 IMAGE TitleEnter;			//エンターキーを押す
@@ -123,6 +126,10 @@ VOID PlayDraw(VOID);						//	プレイ画面（描画）
 VOID End(VOID);								//	エンド画面
 VOID EndProc(VOID);							//	エンド画面（処理）
 VOID EndDraw(VOID);							//	エンド画面（描画）
+
+VOID EndOver(VOID);							//ゲームオーバー画面
+VOID EndOverProc(VOID);						//ゲームオーバー画面（処理）
+VOID EndOverDraw(VOID);						//ゲームオーバー画面（描画）
 
 VOID Change(VOID);							//	切り替え画面
 VOID ChangeProc(VOID);						//	切り替え画面（処理）
@@ -325,6 +332,9 @@ BOOL GameLoad(VOID)
 	//画像の読み込み
 	if (!LoadImageMem(&player.img, ".\\Image\\player.png")) { return FALSE; }
 	if (!LoadImageMem(&goal.img, ".\\Image\\goal.png")) { return FALSE; }
+	
+	//敵の読み込み
+	if (!LoadImageMem(&enemy.img, ".\\Image\\enemy.png")) { return FALSE; }
 	
 	//ロゴを読み込み
 	if (!LoadImageMem(&TitleLogo, ".\\Image\\titlelogo.png")) { return FALSE; }
@@ -738,6 +748,57 @@ VOID EndDraw(VOID)
 }
 
 /// <summary>
+/// GameOve画面
+/// </summary>
+VOID EndOver(VOID)
+{
+	EndOverProc();		//処理
+	EndOverDraw();		//描画
+
+	return;
+}
+
+/// <summary>
+/// GameOve画面の処理
+/// </summary>
+VOID EndOverProc(VOID)
+{
+
+	//BGMが流れていないとき
+	if (CheckSoundMem(EndBGM.handle) == 0)
+	{
+		//BGMを流す
+		PlaySoundMem(EndBGM.handle, EndBGM.playType);
+	}
+
+	//タイトルシーンへ切り替える
+	if (KeyClick(KEY_INPUT_RETURN) == TRUE)
+	{
+		//BGMを止める
+		StopSoundMem(EndBGM.handle);
+
+		//シーン切り替え
+		//次のシーンの初期化をここで行うと楽
+
+		//プレイ画面に切り替え
+		ChangeScene(GAME_SCENE_TITLE);
+	}
+
+	return;
+}
+
+/// <summary>
+/// GameOver画面の描画
+/// </summary>
+VOID EndOverDraw(VOID)
+{
+	//GameOverrの描画
+	DrawGraph(EndOver.x, EndOver.y, EndOver.handle, TRUE);
+
+	return;
+}
+
+/// <summary>
 /// 切り替え画面
 /// </summary>
 VOID Change(VOID)
@@ -805,14 +866,16 @@ VOID ChangeDraw(VOID)
 	switch (OldGameScene)
 	{
 	case GAME_SCENE_TITLE:
-		TitleDraw();	//タイトル画面の描画
+		TitleDraw();			//タイトル画面の描画
 		break;
 	case GAME_SCENE_PLAY:
-		PlayDraw();		//プレイ画面の描画
+		PlayDraw();				//プレイ画面の描画
 		break;
 	case GAME_SCENE_END:
-		EndDraw();		//エンド画面の描画
+		EndDraw();				//エンド画面の描画
 		break;
+	case GAME_SCENE_ENDOVER:	//ゲームオーバー画面の描画
+		EndOverDraw();
 	default:
 		break;
 	}
